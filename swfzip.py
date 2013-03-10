@@ -7,10 +7,10 @@
 ## ZWS(LZMA)
 ## | 4 bytes       | 4 bytes    | 4 bytes       | 5 bytes    | n bytes    | 6 bytes         |
 ## | 'ZWS'+version | scriptLen  | compressedLen | LZMA props | LZMA data  | LZMA end marker |
-## 
+##
 ## scriptLen is the uncompressed length of the SWF data. Includes 4 bytes SWF header and
 ## 4 bytes for scriptLen itself
-## 
+##
 ## compressedLen does not include header (4+4+4 bytes) or lzma props (5 bytes)
 ## compressedLen does include LZMA end marker (6 bytes)
 #
@@ -67,7 +67,7 @@ def debug(msg, level='info'):
 
 def check(test, msg):
     test or exit('Error: \n'+msg)
-    
+
 def unzip(inData):
     if inData[0] == 'C':
         # zlib SWF
@@ -86,14 +86,14 @@ def unzip(inData):
 
     sigSize = struct.unpack("<I", inData[4:8])[0]
     debug('Filesize in signature: %s' % sigSize)
-    
+
     decompressSize = len(decompressData) +8
     debug('Filesize decompressed: %s' % decompressSize)
 
     check((sigSize == decompressSize), 'Length not correct, decompression failed')
     header = list(struct.unpack("<8B", inData[0:8]))
     header[0] = ord('F')
-    
+
     debug('Generating uncompressed data')
     return struct.pack("<8B", *header)+decompressData
 
@@ -108,7 +108,7 @@ def zip(inData, compression):
         # 5 accounts for lzma props
 
         compressSize = len(compressData) - 5
-        
+
         header = list(struct.unpack("<12B", inData[0:12]))
         header[0]  = ord('Z')
         header[3]  = header[3]>=13 and header[3] or 13
@@ -116,28 +116,29 @@ def zip(inData, compression):
         header[9]  = (compressSize >> 8)  & 0xFF
         header[10] = (compressSize >> 16) & 0xFF
         header[11] = (compressSize >> 24) & 0xFF
-        
+
         debug('Packing lzma header')
         headerBytes = struct.pack("<12B", *header);
     else:
         check((inData[0] != 'C'), "already zlib compressed")
-        
+
         rawSwf = unzip(inData);
-        
+
         debug('Compressing with zlib')
         compressData = zlib.compress(rawSwf[8:])
-        
+
         compressSize = len(compressData)
-        
+
         header = list(struct.unpack("<8B", inData[0:8]))
         header[0] = ord('C')
-        
+        header[3]  = header[3]>=6 and header[3] or 6
+
         debug('Packing zlib header')
         headerBytes = struct.pack("<8B", *header)
 
     debug('Generating compressed data')
     return headerBytes+compressData
-    
+
 def process(infile, outfile, operation='unzip', compression='zlib'):
     debug('Reading '+infile)
     fi = open(infile, "rb")
@@ -146,8 +147,8 @@ def process(infile, outfile, operation='unzip', compression='zlib'):
     fi.close()
 
     check((inData[1] == 'W') and (inData[2] == 'S'), "not a SWF file")
-    
-    
+
+
     if(operation=='unzip'):
         outData = unzip(inData)
         increment = round(100.0 * len(outData) / infileSize) - 100
@@ -164,9 +165,9 @@ def process(infile, outfile, operation='unzip', compression='zlib'):
     fo.close()
 
 if __name__ == "__main__":
-    
+
     command = 'swfunzip' in sys.argv[0] and 'unzip' or 'zip';
-    
+
     if(command == 'unzip'):
         check(len(sys.argv) == 3, 'usage: swfunzip input.swf output.swf')
     else:
@@ -176,16 +177,16 @@ if __name__ == "__main__":
             len(sys.argv) == 4 and sys.argv[3] in ['lzma', 'zlib', ''],
             'usage: swfzip input.swf output.swf [lzma/zlib] \
             \n\n notice:zlib is used if compression type not given.')
-    
+
     infile = sys.argv[1]
     debug('Input file: '+infile)
     check(os.path.exists(infile), 'Input file not exists')
-    
+
     outfile = sys.argv[2]
     debug('Output file: '+outfile)
     if os.path.exists(outfile) and not confirm('Output file exists, overwrite?'):
         sys.exit(0)
-    
+
     if(command == 'zip'):
         compression = len(sys.argv) == 3 and 'zlib' or sys.argv[3]
         process(infile, outfile, command, compression)
