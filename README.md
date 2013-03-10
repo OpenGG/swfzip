@@ -13,3 +13,7 @@ Compressing: `swfzip.py input.swf output.swf [lzma/zlib]`
 If no compression format is given, then `zlib` is used, for its better compatibility
 
 Desompressing: `swfunzip.py input.swf output.swf`
+
+## Credits
+
+This repo is inspired by jspiro's swf2lzma repo: https://github.com/jspiro/swf2lzma
