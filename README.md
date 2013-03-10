@@ -9,7 +9,7 @@ Toolset to compress/decompress swf with zlib/lzma
 
 ## Usage
 
-Compressing: `swfzip.py input.swf output.swf [lzma/zlib]`
+Compressing: `swfzip.py input.swf output.swf [lzma/zlib]`.
 
 Notice: If no compression format is given, then `zlib` is used, for its better compatibility.
 
