@@ -17,4 +17,4 @@ Desompressing: `swfunzip.py input.swf output.swf`.
 
 ## Credits
 
-This repo is inspired by [jspiro's swf2lzma repo][https://github.com/jspiro/swf2lzma].
+This repo is inspired by [jspiro's swf2lzma repo](https://github.com/jspiro/swf2lzma).
